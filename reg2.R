@@ -6,6 +6,7 @@ library(readr)
 
 
 
+
 kc_house_data <- read_csv("kc_house_data.csv")
 View(kc_house_data)
 
@@ -28,7 +29,7 @@ banco_final <- banco_final |> dplyr::mutate(id = dplyr::row_number())
 
 
 # Índices dos outliers
-outliers <- c(20,61,64,66,67)
+outliers <- c(20,61,63,64,66,67)
 
 banco_final_novo<- banco_final |> dplyr::filter(!id %in% outliers) |> dplyr::select(-id)
 
@@ -54,7 +55,7 @@ n<-dim(banco_final)[1]
 n<-dim(banco_final_novo)[1]
 
 # com a seguinte funcao se obtem varias medidas de influencia
-influence.measures(fit2)
+influence.measures(fit3)
 
 # Alavancagem
 h_values<-hatvalues(fit3)
@@ -116,7 +117,7 @@ which(abs(residuo)>3)
 hist(residuo) # histograma dos residuos
 
 # envelope simulado baseado nos residuos studentizados
-hnp(fit2,resid.type="student",halfnormal = F) # envelope simulado 
+hnp(fit3,resid.type="student",halfnormal = F) # envelope simulado 
 
 
 ## Testa [S0]

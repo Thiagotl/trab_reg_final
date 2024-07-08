@@ -1,0 +1,216 @@
+---
+title: "Trabalho Final - Análise de Regressão"
+author: "Thiago Tavares Lopes"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+header-includes:
+   - \usepackage[brazil]{babel}
+   - \usepackage{bm}
+   - \usepackage{float}
+   - \usepackage{multirow}
+geometry: left=2.5cm, right=2.5cm, top=2cm, bottom=2cm
+output:
+  bookdown::pdf_document2:
+    fig.align: 'center'
+editor_options:
+  chunk_output_type: console
+  markdown: 
+    wrap: sentence
+---
+```{r setup, include=FALSE}
+options(encoding = "UTF-8")
+options(OutDec = ",")
+options(scipen = 999, digits =5)
+
+```
+
+
+
+```{r include=FALSE}
+# Pacotes
+library(hnp) # pacote para envelope simulado
+library(lmtest) # teste reset
+library(car) # para teste de multicolinearidade (fatores de inflacao de variancia)
+library(tseries)
+library(readr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+
+```
+
+```{r include=FALSE}
+# Banco de dados e ajustes
+
+kc_house_data <- read_csv("kc_house_data.csv")
+#View(kc_house_data)
+attach(kc_house_data)
+#str(kc_house_data)
+
+banco_final <- kc_house_data|> 
+  dplyr::select(price, bathrooms, bedrooms, floors, sqft_living, 
+                sqft_above, sqft_lot, sqft_basement, yr_built, waterfront) |> tidyr::drop_na()
+
+banco_final<-data.frame(banco_final[1:110,]) # selecionando apenas as 110 primeiras linhas do banco
+
+
+banco_final_id <- banco_final |> dplyr::mutate(id = dplyr::row_number()) # criando um coluna id correspondente ao número da linha em questao 
+
+# Índices dos outliers
+outliers <- c(20,61,63,64,66,67)
+
+# banco final com os ajustes de remocao dos pontos influentes no modelo
+banco_final_novo<- banco_final_id |> dplyr::filter(!id %in% outliers) |> dplyr::select(-id)
+
+
+```
+
+
+# Seleção do modelo
+Nesta seção temos a construção do primeiro modelo no qual foi ajustado com todas as variáveis para explicação da variável \textit{price}.
+
+## Variáveis do estudo
+Na tabela \ref{tab:tab} temos a análise descritiva das variáveis. Logo, podemos indicar o primeiro modelo ajustado com todas as variáveis: 
+$$y=\beta_{1}+\beta_{2}x_{2}+\beta_{3}x_{3}+\beta_{4}x_{4}+\beta_{5}x_{5}+\beta_{6}x_{6}+\beta_{7}x_{7}+\beta_{8}x_{8}+\beta_{9}x_{9}+\beta_{10}x_{10}$$
+
+
+```{r echo=FALSE}
+descritiva<-summary(banco_final)
+kable(descritiva, format = "latex", booktabs = TRUE,caption = "Análise descritiva")  |> 
+  kable_styling(latex_options = c("striped", "HOLD_position", "scale_down"))
+```
+
+
+```{r include=FALSE}
+fit<-lm(price~., data=banco_final)
+# foram significativos para o modelo sqft_living, yr_build, waterfront 
+summary(fit)
+summary_fit<-summary(fit)
+# Extraindo a tabela de coeficientes
+coef_table <- summary_fit$coefficients
+
+# Convertendo a tabela de coeficientes em um data frame
+coef_df <- as.data.frame(coef_table)
+step(fit)
+
+```
+
+
+```{r echo=FALSE, label=""}
+# tabela com os coeficientes
+kable(coef_df, format = "latex", booktabs = TRUE,caption = "Resultados da Regressão Linear")  |> 
+  kable_styling(latex_options = c("striped", "HOLD_position"))
+# se for necessario modificacoes na tabela salvar com tab  e deu usar o cat(tab) para gerar a tabela no console
+
+```
+
+Após isso foi feito um \textit{step(fit)} do modelo 1, para vericar uma possível ajuste com as variáveis em questão utilizando o critério de seleção de AKAIKE o AIC. 
+
+
+```{r include=FALSE}
+fit2<-lm(formula = price ~ sqft_living + yr_built + waterfront, data = banco_final)
+summary(fit2)
+summary_fit2<-summary(fit2)
+# Extraindo a tabela de coeficientes
+coef_table2 <- summary_fit2$coefficients
+
+# Convertendo a tabela de coeficientes em um data frame
+coef_df2 <- as.data.frame(coef_table2)
+
+```
+
+
+```{r echo=FALSE, label=""}
+kable(coef_df2, format = "latex", booktabs = TRUE,caption = "Resultados da Regressão Linear")  |> 
+  kable_styling(latex_options = c("striped", "HOLD_position"))
+
+```
+
+## Análise de diagnóstico e inflência
+
+
+```{r include=FALSE}
+#tamanho do banco - banco sem remocao de observacoes
+n<-dim(banco_final)[1]
+```
+
+```{r plot, echo=FALSE, fig.width=6, fig.height=3.8}
+# com a seguinte funcao se obtem varias medidas de influencia
+#influence.measures(fit2)
+
+# Alavancagem
+h_values<-hatvalues(fit2)
+h_bar<-fit2$rank / n
+limite<-2*h_bar
+abline(plot(hatvalues(fit2),ylab="Alavancagem"), 
+       col="red", h=limite,lty=2)
+#which(hatvalues(fit2)>limite)
+outliers <- which(h_values > limite)
+text(outliers, h_values[outliers], labels=outliers, pos=4, col="black", cex=0.8)
+```
+
+
+```{r echo=FALSE ,fig.width=6, fig.height=3.8}
+
+# DFFIT
+dffits_values<-dffits(fit2)
+limite<-2*sqrt(fit2$rank / n)
+abline(plot(dffits(fit2),ylab="DFFITS"), 
+       col="red", h=c(-limite,limite),lty=2)
+#which(abs(dffits(fit2))>limite)
+outliers <- which(abs(dffits(fit2))>limite)
+text(outliers, dffits_values[outliers], labels=outliers, pos=4, col="black", cex=0.8)
+#identify(dffits(fit2),n=5)
+
+```
+
+```{r echo=FALSE, fig.width=25, fig.height=10}
+
+
+
+# DFBETA
+dfbetas_values<-dfbetas(fit2) # cada beta tem seu DF
+
+dfb1<-dfbetas(fit2)[,1]
+dfb2<-dfbetas(fit2)[,2]
+dfb3<-dfbetas(fit2)[,3]
+dfb4<-dfbetas(fit2)[,4]
+
+limite<-2/sqrt(n)
+par(mfrow = c(2, 2))
+
+abline(plot(dfb1,ylab="DFBETA 1"), 
+       col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
+
+abline(plot(dfb2,ylab="DFBETA 2"), 
+       col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
+
+abline(plot(dfb3,ylab="DFBETA 3"), 
+       col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
+
+abline(plot(dfb4,ylab="DFBETA 4"), 
+       col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
+
+
+```
+
+
+```{r}
+# distancia de Cook
+cook_values<-cooks.distance(fit2)
+limite<-4/(n-fit2$rank)
+abline(plot(cooks.distance(fit2),ylab="Distancia de Cook"), 
+       col="red", h=limite,lty=2)
+
+#identify(cooks.distance(fit2), n=2)
+
+# Identificar os pontos que são maiores que o limite
+outliers_cook <- which(cooks.distance(fit2) > limite)
+
+# Adiciona pontos em destaque para os valores acima do limite
+#points(outliers_cook, cooks.distance(fit2)[outliers_cook], col="white",pch=19)
+
+# Adiciona rótulos para os pontos acima do limite
+text(outliers_cook, cooks.distance(fit2)[outliers_cook], labels=outliers_cook, pos=4, col="black", cex=0.8)
+```
+
+
