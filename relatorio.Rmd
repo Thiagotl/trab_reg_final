@@ -59,7 +59,7 @@ banco_final_id <- banco_final |> dplyr::mutate(id = dplyr::row_number()) # crian
 outliers <- c(20,61,63,64,66,67)
 
 # banco final com os ajustes de remocao dos pontos influentes no modelo
-banco_final_novo<- banco_final_id |> dplyr::filter(!id %in% outliers) |> dplyr::select(-id)
+banco_final_novo<-banco_final_id |> dplyr::filter(!id %in% outliers) |> dplyr::select(-id)
 
 
 ```
@@ -253,4 +253,83 @@ hnp(fit2,resid.type="student",halfnormal = F) # envelope simulado
 
 ```
 
+Foi feita a remoção da observação 20 e foi refeita a análise diagnóstico apenas da distância de cook, redíduos e envelope simulado. Por conseguinte, as novas observações foram identificadas como influentes para  para o modelo e causada a rejeição de ao menos duas das suposições obrigatórios para valiação do modelo de regressão linear. Então, foram removidas as seguinte observações $61,63,64,66,67$.
+
+
+```{r include=FALSE}
+# ajuste do modelo com sem a observação 20
+fit3<-lm(formula = price ~ floors + sqft_living + yr_built + waterfront, 
+         data = banco_final_novo)
+summary(fit3)
+summary_fit<-summary(fit3)
+# Extraindo a tabela de coeficientes
+coef_table_fit3 <- summary_fit$coefficients
+
+# Convertendo a tabela de coeficientes em um data frame
+coef_df_fit3 <- as.data.frame(coef_table_fit3)
+
+```
+
+```{r echo=FALSE, label=""}
+kable(coef_df_fit3, format = "latex", booktabs = TRUE,caption = "Resultados da Regressão Linear")  |> 
+  kable_styling(latex_options = c("striped", "HOLD_position"))
+
+```
+
+Distância de Cook
+
+```{r echo=FALSE,fig.width=6, fig.height=3.8}
+# distancia de Cook
+cook_values<-cooks.distance(fit3)
+limite<-4/(n-fit3$rank)
+abline(plot(cooks.distance(fit3),ylab="Distancia de Cook"), 
+       col="red", h=limite,lty=2)
+
+#identify(cooks.distance(fit2), n=2)
+
+# Identificar os pontos que são maiores que o limite
+outliers_cook <- which(cooks.distance(fit3) > limite)
+
+# Adiciona pontos em destaque para os valores acima do limite
+#points(outliers_cook, cooks.distance(fit2)[outliers_cook], col="white",pch=19)
+
+# Adiciona rótulos para os pontos acima do limite
+text(outliers_cook, cooks.distance(fit3)[outliers_cook], labels=outliers_cook, pos=4, col="black", cex=0.8)
+```
+
+Resíduos 
+
+
+```{r echo=FALSE,fig.width=6, fig.height=3.8}
+# residuo
+residuo <- rstudent(fit3) # residuo studentizado
+
+plot(residuo,type='p',pch="+",main="Residuos",xlab="indices") # plota os residuos do modelo
+abline(h=c(-2,0,2),lty=3) # inclui linhas horizontais no grafico
+
+outliers_high <- which(residuo > 3)
+outliers_low <- which(residuo < -3)
+
+# Adiciona pontos em vermelho para os resíduos maiores que 3
+#points(outliers_high, residuo[outliers_high], col="black", pch=19)
+
+# Adiciona pontos em azul para os resíduos menores que -3
+points(outliers_low, residuo[outliers_low], col="blue", pch=19)
+
+# Adiciona rótulos para os outliers maiores que 3
+text(outliers_high, residuo[outliers_high], labels=outliers_high, pos=4, col="black", cex=0.8)
+
+# Adiciona rótulos para os outliers menores que -3
+#text(outliers_low, residuo[outliers_low], labels=outliers_low, pos=4, col="blue", cex=0.8)
+```
+
+
+```{r echo=FALSE, fig.width=6, fig.height=3.8, warning=FALSE, message=FALSE}
+
+hist(residuo) # histograma dos residuos
+
+# envelope simulado baseado nos residuos studentizados
+hnp(fit3,resid.type="student",halfnormal = F) # envelope simulado 
+
+```
 
