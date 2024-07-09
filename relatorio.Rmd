@@ -125,7 +125,7 @@ kable(coef_df2, format = "latex", booktabs = TRUE,caption = "Resultados da Regre
 
 ```
 
-## Análise de diagnóstico e inflência
+## Análise de diagnóstico e influência
 
 
 ```{r include=FALSE}
@@ -193,8 +193,9 @@ abline(plot(dfb4,ylab="DFBETA 4"),
 
 ```
 
+Distância de Cook
 
-```{r}
+```{r echo=FALSE,fig.width=6, fig.height=3.8}
 # distancia de Cook
 cook_values<-cooks.distance(fit2)
 limite<-4/(n-fit2$rank)
@@ -211,6 +212,45 @@ outliers_cook <- which(cooks.distance(fit2) > limite)
 
 # Adiciona rótulos para os pontos acima do limite
 text(outliers_cook, cooks.distance(fit2)[outliers_cook], labels=outliers_cook, pos=4, col="black", cex=0.8)
+```
+
+Resíduos 
+
+
+```{r echo=FALSE,fig.width=6, fig.height=3.8}
+# residuo
+residuo <- rstudent(fit2) # residuo studentizado
+
+plot(residuo,type='p',pch="+",main="Residuos",xlab="indices") # plota os residuos do modelo
+abline(h=c(-2,0,2),lty=3) # inclui linhas horizontais no grafico
+
+outliers_high <- which(residuo > 3)
+outliers_low <- which(residuo < -3)
+
+# Adiciona pontos em vermelho para os resíduos maiores que 3
+#points(outliers_high, residuo[outliers_high], col="black", pch=19)
+
+# Adiciona pontos em azul para os resíduos menores que -3
+points(outliers_low, residuo[outliers_low], col="blue", pch=19)
+
+# Adiciona rótulos para os outliers maiores que 3
+text(outliers_high, residuo[outliers_high], labels=outliers_high, pos=4, col="black", cex=0.8)
+
+# Adiciona rótulos para os outliers menores que -3
+#text(outliers_low, residuo[outliers_low], labels=outliers_low, pos=4, col="blue", cex=0.8)
+```
+
+
+Histograma dos resíduos e envelope simulado
+
+
+```{r echo=FALSE, fig.width=6, fig.height=3.8, warning=FALSE, message=FALSE}
+
+hist(residuo) # histograma dos residuos
+
+# envelope simulado baseado nos residuos studentizados
+hnp(fit2,resid.type="student",halfnormal = F) # envelope simulado 
+
 ```
 
 

@@ -88,26 +88,7 @@ text(outliers_cook, cooks.distance(fit3)[outliers_cook], labels=outliers_cook, p
 
 
 
-# residuo
-residuo <- rstudent(fit3) # residuo studentizado
-
-plot(residuo,type='p',pch="+",main="Residuos",xlab="indices") # plota os residuos do modelo
-abline(h=c(-2,0,2),lty=3) # inclui linhas horizontais no grafico
-
-outliers_high <- which(residuo > 3)
-outliers_low <- which(residuo < -3)
-
-# Adiciona pontos em vermelho para os resíduos maiores que 3
-points(outliers_high, residuo[outliers_high], col="red", pch=19)
-
-# Adiciona pontos em azul para os resíduos menores que -3
-points(outliers_low, residuo[outliers_low], col="blue", pch=19)
-
-# Adiciona rótulos para os outliers maiores que 3
-text(outliers_high, residuo[outliers_high], labels=outliers_high, pos=4, col="red", cex=0.8)
-
-# Adiciona rótulos para os outliers menores que -3
-text(outliers_low, residuo[outliers_low], labels=outliers_low, pos=4, col="blue", cex=0.8)
+ 
 
 
 which(abs(residuo)>3)
