@@ -23,8 +23,6 @@ options(scipen = 999, digits =5)
 
 ```
 
-
-
 ```{r include=FALSE}
 # Pacotes
 library(hnp) # pacote para envelope simulado
@@ -66,10 +64,14 @@ banco_final_novo<-banco_final_id |> dplyr::filter(!id %in% outliers) |> dplyr::s
 
 
 # Seleção do modelo
-Nesta seção temos a construção do primeiro modelo no qual foi ajustado com todas as variáveis para explicação da variável \textit{price}.
+Nesta seção temos a construção do primeiro modelo no qual foi ajustado com todas as variáveis para explicação da variável resposta  \textit{price}.
 
 ## Variáveis do estudo
-Na tabela \ref{tab:tab} temos a análise descritiva das variáveis. Logo, podemos indicar o primeiro modelo ajustado com todas as variáveis: 
+
+O estudo foi direcionado ao banco de dados referente a informações de imóveis e suas características e preço. Como mencionando anteriormente a construção do modelo visa verificar como algumas características específicas podem influenciar no preço do imóvel. O bando de dados em questão pode ser acessado no [link](https://www.kaggle.com/datasets/vikramamin/kc-house-dataset-home-prices), para fins de um melhor controle do ajuste do modelo, o banco de dados foi reduzido para 110 observações. Na tabela 1, temos a apresentação das variáveis em estudo.
+
+
+Na tabela \ref{tab:tab2} é apresentado o resultado da análise descritiva das variáveis em estudo. Logo, podemos indicar o primeiro modelo ajustado com todas as variáveis: 
 $$y=\beta_{1}+\beta_{2}x_{2}+\beta_{3}x_{3}+\beta_{4}x_{4}+\beta_{5}x_{5}+\beta_{6}x_{6}+\beta_{7}x_{7}+\beta_{8}x_{8}+\beta_{9}x_{9}+\beta_{10}x_{10}$$
 
 
@@ -95,7 +97,7 @@ step(fit)
 ```
 
 
-```{r echo=FALSE, label=""}
+```{r echo=FALSE, label="tab2"}
 # tabela com os coeficientes
 kable(coef_df, format = "latex", booktabs = TRUE,caption = "Resultados da Regressão Linear")  |> 
   kable_styling(latex_options = c("striped", "HOLD_position"))
