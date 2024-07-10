@@ -7,6 +7,7 @@ header-includes:
    - \usepackage{bm}
    - \usepackage{float}
    - \usepackage{multirow}
+   - \usepackage{booktabs}
 geometry: left=2.5cm, right=2.5cm, top=2cm, bottom=2cm
 output:
   bookdown::pdf_document2:
@@ -68,14 +69,33 @@ Nesta seção temos a construção do primeiro modelo no qual foi ajustado com t
 
 ## Variáveis do estudo
 
-O estudo foi direcionado ao banco de dados referente a informações de imóveis e suas características e preço. Como mencionando anteriormente a construção do modelo visa verificar como algumas características específicas podem influenciar no preço do imóvel. O bando de dados em questão pode ser acessado no [link](https://www.kaggle.com/datasets/vikramamin/kc-house-dataset-home-prices), para fins de um melhor controle do ajuste do modelo, o banco de dados foi reduzido para 110 observações. Na tabela 1, temos a apresentação das variáveis em estudo.
+O estudo foi direcionado ao banco de dados referente a informações de imóveis e suas características e preço. Como mencionando anteriormente a construção do modelo visa verificar como algumas características específicas podem influenciar no preço do imóvel. O bando de dados em questão pode ser acessado no [link](https://www.kaggle.com/datasets/vikramamin/kc-house-dataset-home-prices), para fins de um melhor controle do ajuste do modelo, o banco de dados foi reduzido para 110 observações. Na tabela \ref{tab:tab1}, temos a apresentação das variáveis em estudo.
+
+\begin{table}[H]
+\caption{Variável do estudo sobre o preço de imóveis}
+\label{tab:tab1}
+\centering
+\begin{tabular}{@{}cl@{}}
+\toprule
+\multicolumn{1}{l}{\textbf{Variável}} & \textbf{Descrição} \\ \midrule
+Price & Preço do imóvel \\
+Bathrooms & Número de banheiros no imóvel \\
+Bedrooms & Número de quartos no imóvel \\
+Floors & Número de andares no imóvel \\
+Sqft\_living & Metragem quadrada do imóvel \\
+Sqft\_lot & Metragem quadrada do terreno \\
+Sqft\_abova & Metragem do imóvel (sem o porão) \\
+Yr\_build & Ano de construção do imóvel \\
+Waterfront & Vista para o mar \\ \bottomrule
+\end{tabular}
+\end{table}
 
 
-Na tabela \ref{tab:tab2} é apresentado o resultado da análise descritiva das variáveis em estudo. Logo, podemos indicar o primeiro modelo ajustado com todas as variáveis: 
+Na tabela \ref{tab:tab2} é apresentado o resultado da análise descritiva das variáveis em estudo, como média, mediana, 1° e 3° quartil, além dos valores de máximo e mínimo. Logo, podemos indicar o primeiro modelo ajustado com todas as variáveis: 
 $$y=\beta_{1}+\beta_{2}x_{2}+\beta_{3}x_{3}+\beta_{4}x_{4}+\beta_{5}x_{5}+\beta_{6}x_{6}+\beta_{7}x_{7}+\beta_{8}x_{8}+\beta_{9}x_{9}+\beta_{10}x_{10}$$
+em que $\beta_{1}$ é o intercepto
 
-
-```{r echo=FALSE}
+```{r echo=FALSE, label="tab2"}
 descritiva<-summary(banco_final)
 kable(descritiva, format = "latex", booktabs = TRUE,caption = "Análise descritiva")  |> 
   kable_styling(latex_options = c("striped", "HOLD_position", "scale_down"))
@@ -97,7 +117,7 @@ step(fit)
 ```
 
 
-```{r echo=FALSE, label="tab2"}
+```{r echo=FALSE, label="tab3"}
 # tabela com os coeficientes
 kable(coef_df, format = "latex", booktabs = TRUE,caption = "Resultados da Regressão Linear")  |> 
   kable_styling(latex_options = c("striped", "HOLD_position"))
