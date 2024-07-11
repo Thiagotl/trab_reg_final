@@ -34,7 +34,7 @@ library(readr)
 library(ggplot2)
 library(knitr)
 library(kableExtra)
-
+#library(ggcorrplot)
 ```
 
 ```{r include=FALSE}
@@ -69,7 +69,7 @@ Nesta seção temos a construção do primeiro modelo no qual foi ajustado com t
 
 ## Variáveis do estudo
 
-O estudo foi direcionado ao banco de dados referente a informações de imóveis e suas características e preço. Como mencionando anteriormente a construção do modelo visa verificar como algumas características específicas podem influenciar no preço do imóvel. O bando de dados em questão pode ser acessado no [link](https://www.kaggle.com/datasets/vikramamin/kc-house-dataset-home-prices), para fins de um melhor controle do ajuste do modelo, o banco de dados foi reduzido para 110 observações. Na tabela \ref{tab:tab1}, temos a apresentação das variáveis em estudo.
+O estudo foi direcionado a dados referente a informações de imóveis e suas características o seu valor de mercado. Como mencionando anteriormente a construção do modelo visa verificar como algumas características específicas podem influenciar no preço do imóvel. O banco de dados em questão pode ser acessado no [link](https://www.kaggle.com/datasets/vikramamin/kc-house-dataset-home-prices), para fins de um melhor controle do ajuste do modelo, o banco de dados foi reduzido para 110 observações. Na tabela \ref{tab:tab1}, temos a apresentação das variáveis em estudo.
 
 \begin{table}[H]
 \caption{Variável do estudo sobre o preço de imóveis}
@@ -90,9 +90,21 @@ Waterfront & Vista para o mar \\ \bottomrule
 \end{tabular}
 \end{table}
 
+Já na figura \ref{fig:fig1}, é apresentado o gráfico de correlação par as variáveis em estudo. Neste caso, podemos verificar uma correlação positiva moderada (0,443185) entre o número de banheiros o preço do imóvel, também temos uma correlação positiva (0,652976) forte para imóveis com maior metragem quadrada, o que leva a crer que área construída pode ser uma uma variável muito importante para o modelo.
+Por último, há  correlação negativa muito fraca (-0,060581) com imóveis mais antigos tendem a ser ligeiramente menos caros. 
+
+```{r plot, echo=FALSE, fig.cap="Gráfico de dispersão", fig.width=8,fig.height=10, label="fig1"}
+#cor(banco_final)
+plot(banco_final)
+
+
+```
+
+
+\newpage
 
 Na tabela \ref{tab:tab2} é apresentado o resultado da análise descritiva das variáveis em estudo, como média, mediana, 1° e 3° quartil, além dos valores de máximo e mínimo. Logo, podemos indicar o primeiro modelo ajustado com todas as variáveis: 
-$$\hat{y}=\beta_{1}+\beta_{2}x_{2}+\beta_{3}x_{3}+\beta_{4}x_{4}+\beta_{5}x_{5}+\beta_{6}x_{6}+\beta_{7}x_{7}+\beta_{8}x_{8}$$
+$$\hat{y}=\beta_{1}+\beta_{2}x_{2}+\beta_{3}x_{3}+\beta_{4}x_{4}+\beta_{5}x_{5}+\beta_{6}x_{6}+\beta_{7}x_{7}+\beta_{8}x_{8}+\beta_{9}x{9}$$
 em que $\beta_{1}$ é o intercepto do modelo de regressão linear, $y$ é a variável desfecho \textit{price}, e o vetor das covariáveis é $(x_{2},x_{3},x_{4},x_{5},x_{6},x_{7},x_{8})^{T}$=(bathrooms, bedrooms, bloors, sqft_living, sqft_above, sqft_lot, yr_built, waterfront).
 
 ```{r echo=FALSE, label="tab2"}
@@ -120,7 +132,7 @@ coef_df$Significance <- cut(coef_df[, 4],
 
 ```
 
-Para o primeiro modelo, apenas \textit{sqft\_living}, \textit{yr\_built}, \textit{waterfront} foram significativas para a variável resposta. Por conseguinte, temos que o coeficiente de determinação ($R^{2}$) foi de 0,547 e o $R^{2}$ ajustado ($\bar{R^{2}}$)foi de 0,511, então podemos concluir que esse modelo explica, aproximadamente, 54,7\% da variação de $y$.em sequência, foi utilizado o método \textit{Stepwise} que usa o critério de informação de Akaike (AIC), vale ressaltar que o "melhor" modelo deverá ter o menor AIC. 
+Para o primeiro modelo, apenas \textit{sqft\_living}, \textit{yr\_built}, \textit{waterfront} foram significativas para a variável resposta. Por conseguinte, temos que o coeficiente de determinação ($R^{2}$) foi de 0,547 e o $R^{2}$ ajustado ($\bar{R^{2}}$)foi de 0,511, então podemos concluir que esse modelo explica, aproximadamente, 54,7\% da variação de $y$. Em sequência, foi utilizado o método \textit{Stepwise} que usa o critério de informação de Akaike (AIC), no qual o melhor modelo é selecionado e exclui-se as possíveis covariáveis. 
 
 ```{r echo=FALSE, label="tab3"}
 # tabela com os coeficientes
@@ -132,8 +144,8 @@ kable(coef_df, format = "latex", booktabs = TRUE,caption = "Resultados da Regres
 ```
 
 Um novo modelo foi construído baseado no resultado do critério de informação de Akaike, o qual podemos observar abaixo:
-$$\hat{y}= \beta_{1}+\beta_{4}x_{4}+\beta_{7}x_{7}+\beta_{8}x_{8}$$
-Temos que a variável \textit{price} será explicada pelas variáveis $sqft\_living$, $yr\_built$, $waterfront$. A tabela \ref{tab:tab4}, apresenta os resultados referente ao modelo, temos que agora as três variáveis foram significativas para o modelo. Por conseguinte, o coeficiente de determinação ($R^{2}$) teve uma pequena diminuição para 0,532 e o $R^{2}$ ajustado ($\bar{R^{2}}$) aumentou para 0,519. Por último, ao verificar as suposições do modelo em questão, as suposições $[S_{0}]$, $[S_{3}]$ e $[S_{5}]$ não foram atendidas. Então, foi necessário realizar a análise de diagnóstico e influência. 
+$$\hat{y}= \beta_{1}+\beta_{5}x_{5}+\beta_{8}x_{8}+\beta_{9}x_{9}$$
+Temos que a variável \textit{price} será explicada pelas variáveis $sqft\_living$, $yr\_built$, $waterfront$. A tabela \ref{tab:tab4}, apresenta os resultados referente ao modelo, temos que as três variáveis continuam significativas para o modelo, porém \textit{waterfront} se tornou mais significativa. Por conseguinte, o coeficiente de determinação ($R^{2}$) teve uma pequena diminuição para 0,532 e o $R^{2}$ ajustado ($\bar{R^{2}}$) aumentou para 0,519. Por último, ao verificar as suposições do modelo em questão, as suposições $[S_{0}]$, $[S_{3}]$ e $[S_{5}]$ não foram atendidas. Então, foi necessário realizar a análise de diagnóstico e influência. 
 
 ```{r include=FALSE}
 fit2<-lm(formula = price ~ sqft_living + yr_built + waterfront, data = banco_final)
@@ -160,14 +172,15 @@ kable(coef_df2, format = "latex", booktabs = TRUE,caption = "Resultados da Regre
 
 ## Análise de diagnóstico e influência
 
-Nesta seção temos a análise diagnóstico para o segundo modelo com apenas três covariáveis. O gráfico \ref{} se refere a alavancagem, no qual avaliamos possíveis ponto influentes para o modelo. Nota-se que as observações 6, 48, e 69 estão acima do limite estabelecido, porém ainda se faz necessário verificar se de fato essas observações são influentes. 
+Nesta seção temos a análise diagnóstico para o segundo modelo com apenas três covariáveis. No primeiro teste de influência temos a verificação de pontos de alavancagem que busca identificar pontos atípicos no domínio das variáveis explicativas do modelo.
+No gráfico \ref{fig:fig2} se refere a alavancagem, no qual avaliamos possíveis ponto influentes para o modelo. Nota-se que as observações 6, 48, e 69 estão acima do limite estabelecido, porém ainda se faz necessário verificar se de fato essas observações são influentes. 
 
 ```{r include=FALSE}
 #tamanho do banco - banco sem remocao de observacoes
 n<-dim(banco_final)[1]
 ```
 
-```{r plot, echo=FALSE, fig.width=6, fig.height=3.8}
+```{r plot, echo=FALSE, fig.width=6, fig.cap="Gráfico de Alavancagem", fig.height=3.8, label="fig2"}
 # com a seguinte funcao se obtem varias medidas de influencia
 #influence.measures(fit2)
 
@@ -182,9 +195,9 @@ outliers <- which(h_values > limite)
 text(outliers, h_values[outliers], labels=outliers, pos=4, col="black", cex=0.8)
 ```
 
-Já o gráfico mostra o DFFIT e leva em consideração o quando cada observação influência no valor estimado para $\hat{y}$. Podemos notar que desta vez temos as observações 20, 64, 68 estão sendo influentes para $\hat{y}$, principalmente a observação 20. 
+Já o gráfico \ref{fig:fig3} mostra o DFFITs e leva em consideração o quando cada observação influência no valor estimado para $\hat{y}$. Podemos notar que desta vez temos as observações 20, 64, 68 estão sendo influentes para $\hat{y}$, principalmente a observação 20. 
 
-```{r echo=FALSE ,fig.width=6, fig.height=3.8}
+```{r plot, echo=FALSE, fig.cap="Gráfico DFFIT", label="fig3", ,fig.width=6, fig.height=3.8}
 
 # DFFIT
 dffits_values<-dffits(fit2)
@@ -199,7 +212,7 @@ text(outliers, dffits_values[outliers], labels=outliers, pos=4, col="black", cex
 ```
 
 
-Na sequência temos os gráfico dos DFBETA para $\beta_{}$ do novo modelo ajustado. Podemos notar que a observação 20 aparece tanto $\beta's$ 2, 3 e 4. O que pode ser mais um indicativo que essa observação é influente. Para verificar tal questão, mais dois testes foram feitos, são eles distância de cook e gráfico dos resíduos. 
+Na sequência temos os gráficos dos DFBETA para $\beta_{}$ do novo modelo ajustado. Podemos notar que a observação 20 aparece tanto $\beta_{5},\beta_{8},\beta_{9}$ . O que pode ser mais um indicativo que essa observação é influente. Para verificar tal questão, mais dois testes foram feitos, são eles distância de Cook e gráfico dos resíduos. 
 
 ```{r echo=FALSE}
 
@@ -232,7 +245,7 @@ limite<-2/sqrt(n)
 ```
 
 
-```{r echo=FALSE}
+```{r plot, echo=FALSE, fig.cap="DFBETA 1", fig.width=6, fig.height=3.8,label="fig4"}
 get_top_bottom <- function(dfb, n = 5, limite) {
   out_of_limits <- which(dfb > limite | dfb < -limite)
   order_dfb <- order(abs(dfb[out_of_limits]), decreasing = TRUE)
@@ -253,8 +266,13 @@ points(indices_dfb1, dfb1[indices_dfb1], col = "red", pch = 19)
 # Adicionando as observações correspondentes aos pontos
 text(indices_dfb1, dfb1[indices_dfb1], labels = indices_dfb1, pos = 3, col = "red")
 
+```
+
+
+
+```{r plot, echo=FALSE, fig.cap="DFBETA 5", fig.width=6, fig.height=3.8,label="fig5"}
 # Plot para DFBETA 2
-plot(dfb2, ylab = "DFBETA 2", main = "DFBETA 2")
+plot(dfb2, ylab = "DFBETA 5", main = "DFBETA 5")
 abline(h = c(-limite, 0, limite), col = c("red", "blue", "red"), lty = c(2, 1, 2))
 
 # Selecionando os índices dos 5 maiores e 5 menores valores fora do limite
@@ -266,8 +284,12 @@ points(indices_dfb2, dfb2[indices_dfb2], col = "red", pch = 19)
 # Adicionando as observações correspondentes aos pontos
 text(indices_dfb2, dfb2[indices_dfb2], labels = indices_dfb2, pos = 3, col = "red")
 
+```
+
+
+```{r plot, echo=FALSE, fig.cap="DFBETA 8", fig.width=6, fig.height=3.8, ,label="fig6"}
 # Plot para DFBETA 3
-plot(dfb3, ylab = "DFBETA 3", main = "DFBETA 3")
+plot(dfb3, ylab = "DFBETA 8", main = "DFBETA 8")
 abline(h = c(-limite, 0, limite), col = c("red", "blue", "red"), lty = c(2, 1, 2))
 
 # Selecionando os índices dos 5 maiores e 5 menores valores fora do limite
@@ -278,14 +300,12 @@ points(indices_dfb3, dfb3[indices_dfb3], col = "red", pch = 19)
 
 # Adicionando as observações correspondentes aos pontos
 text(indices_dfb3, dfb3[indices_dfb3], labels = indices_dfb3, pos = 3, col = "red")
-
-
 ```
 
 
-```{r echo=FALSE }
+```{r plot, echo=FALSE, fig.cap="DFBETA 9",fig.width=6, fig.height=3.8,label="fig7"}
 # Plot para DFBETA 4
-plot(dfb4, ylab = "DFBETA 4", main = "DFBETA 4")
+plot(dfb4, ylab = "DFBETA 9", main = "DFBETA 9")
 abline(h = c(-limite, 0, limite), col = c("red", "blue", "red"), lty = c(2, 1, 2))
 
 # Selecionando os índices dos 5 maiores e 5 menores valores fora do limite
@@ -298,10 +318,10 @@ points(indices_dfb4, dfb4[indices_dfb4], col = "red", pch = 19)
 text(indices_dfb4, dfb4[indices_dfb4], labels = indices_dfb4, pos = 3, col = "red")
 ```
 
+\newpage
+No gráfico \ref{fig:fig8} temos a distância de Cook, e novamente a observação 20 aparece como discrepante e fora do limite estabelecido.
 
-No gráfico temos a distância de Cook, e novamente a observação 20 aparece como discrepante e fora do limite estabelecido.
-
-```{r echo=FALSE,fig.width=6, fig.height=3.8}
+```{r plot, echo=FALSE,fig.width=6, fig.height=3.8, fig.cap="Distância de Cook", label="fig8"}
 # distancia de Cook
 cook_values<-cooks.distance(fit2)
 limite<-4/(n-fit2$rank)
@@ -320,9 +340,9 @@ outliers_cook <- which(cooks.distance(fit2) > limite)
 text(outliers_cook, cooks.distance(fit2)[outliers_cook], labels=outliers_cook, pos=4, col="black", cex=0.8)
 ```
 
-O mesmo ocorre no gráfico de resíduos, temos a observação 20 sendo apontada como distante dos limites estabelecidos.  
+O mesmo ocorre no gráfico de resíduos \ref{fig:fig8}, temos a observação 20 sendo apontada como distante dos limites estabelecidos, ou seja, podemos considerar que temos um ponto de influência no modelo. Portanto, torna-se necessário a remoção desta observação do banco de dados.
 
-```{r echo=FALSE,fig.width=6, fig.height=3.8}
+```{r plot, echo=FALSE,fig.width=6, fig.height=3.8, fig.cap="Gráfico dos Resíduos", label="fig9"}
 # residuo
 residuo <- rstudent(fit2) # residuo studentizado
 
@@ -346,21 +366,23 @@ text(outliers_high, residuo[outliers_high], labels=outliers_high, pos=4, col="bl
 ```
 
 
-No gráfico temos o histograma dos resíduos, nota-se que o mesmo está bem diferente do que se espera de uma distribuição normal. No gráfico \ref{} temos o envelope simulado.
+No gráfico \ref{fig:fig9} temos o histograma dos resíduos, nota-se que o mesmo está bem diferente do que se espera de uma distribuição normal. Já no gráfico  \ref{ref:fig11} temos o envelope simulado e podemos notar que os resíduos estão fora das bandas.
 
 
-```{r echo=FALSE, fig.width=6, fig.height=3.8, warning=FALSE, message=FALSE}
+```{r plot, fig.cap="Histograma dos resíduos", echo=FALSE, fig.width=6, fig.height=3.8, label="fig10"}
 
 hist(residuo) # histograma dos residuos
 
+
+```
+
+
+```{r plot, fig.cap="Histograma dos resíduos", echo=FALSE, fig.width=6, fig.height=3.8, label="fig11"}
 # envelope simulado baseado nos residuos studentizados
 hnp(fit2,resid.type="student",halfnormal = F) # envelope simulado 
 
 ```
 
-No primeiro momento, foi feita a remoção da observação 20 e foi refeita a análise diagnóstico. Por conseguinte, novas observações foram identificadas como influentes para  para o modelo e causou a rejeição de ao menos duas das suposições obrigatórios para validação do modelo de regressão linear. Então, após mais alguns ajustes, no total foram removidas 7 observações, são elas: $20,61,63,64,66,67,68$.
-
-Com a remoção destas observações o modelo foi novamente avaliado, foi obtido um $R^{2}$
 
 ```{r include=FALSE}
 # # ajuste do modelo com sem a observação 20
@@ -374,6 +396,47 @@ summary(fit3)
 # coef_df_fit3 <- as.data.frame(coef_table_fit3)
 
 ```
+
+\newpage
+No primeiro momento, foi feita a remoção da observação 20 e foi refeita a análise diagnóstico. Por conseguinte, novas observações foram identificadas como influentes para  para o modelo e causou a rejeição de ao menos duas das suposições obrigatórios para validação do modelo de regressão linear. Então, após mais alguns ajustes, no total foram removidas 7 observações, são elas: $20,61,63,64,66,67,68$ novas análises diagnósticos foram feitas. 
+
+
+## Validação dos pressupostos
+
+Por se tratar de uma regressão linear múltipla, é necessário que o modelo ajusto siga algumas suposições, são elas:\par
+$S_{0}$ : O modelo está corretamente especificado;\par 
+$S_{1}$ : A média dos erros é igual a zero;\par
+$S_{2}$ : Homoscedasticidade dos erros;\par
+$S_{3}$ : Não haver autocorrelação;\par
+$S_{4}$ : Ausência de Multicolinearidade; \par
+$S_{5}$ : Os erros seguem uma distribuição normal. \par
+
+
+Para testar $S_{0}$, é utilizado o teste RESET com hipótese nula $(H_{0})$ de que o modelo está corretamente especificado. O p-valor encontrado foi de $0,4>0,05$, logo não rejeitamos $H_{0}$ e concluímos que o modelo está corretamente especificado.
+
+Para testar $S_{1}$, é utilizado o teste t para as médias dos erros com hipótese nula $(H_{0})$ de que as médias dos erros é igual a zero. O p-valor encontrado foi de $1>0,05$, logo não rejeitamos $H_{0}$ e concluímos que a médias dos erros é igual a zero.
+
+
+Para testar $S_{2}$, é usado o teste de Bressch-Pagan  de Heteroscedasticidadee com hipótese nula $(H_{0})$ de que os erros são homoscedasticos. O p-valor encontrado foi de $0,083>0,05$, logo não rejeitamos $H_{0}$ e concluímos que os erros são homoscedasticos. 
+
+Para testar $S_{3}$, é usado o teste de Durbin-Watson  de autocorrelação com hipótese nula $(H_{0})$ de que não há autocorrelação. O p-valor encontrado foi de $0,44>0,05$, logo não rejeitamos $H_{0}$ e concluímos que não há autocorrelação. 
+
+Para testar $S_{4}$, é utilizado o Fator de Inflação de Variância (VIF) para detectar multicolinearidade. O ideal é que os valores do VIFs seja igual a 1 e principalmente menores que 10. Na tabela \ref{tab:tabvif}, temos os valores dos VIFs para cada covariável e todos os valores se encontram próximo de 1 o que é um indicativo de não multicolinearidade.
+
+
+Para testar $S_{5}$, é utilizado o teste Jarque-Bera com hipótese nula $H_{0}$ de que os erros seguem uma distribuição normal. O p-valor encontrado foi de $0,74>0,05$, logo não rejeitamos $H_{0}$ e concluímos que os erros possuem uma distribuição normal.
+
+
+\begin{table}[H]
+\centering
+\caption{Valores do VIFs para as covariáveis do modelo}
+\label{viftab}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Variável & sqft\_living & yr\_built & waterfront \\ \hline
+VIF & 1,1192 & 1,1135 & 1,0125 \\ \hline
+\end{tabular}
+\end{table}
 
 ```{r include=FALSE}
 
@@ -412,25 +475,7 @@ jarque.bera.test(resid(fit3))
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Para validar também as suposições, podemos verificar o novo histograma dos resíduos (gráfico \ref{fig:fig12})e o envelopo simulado (gráfico \ref{fig:fig13}). Nota-se que agora temos diferenças nítidas nos dois gráficos quando comparados com os gráficos feitos sem a remoção das observações.
 
 ```{r echo=FALSE, label=""}
 # kable(coef_df_fit3, format = "latex", booktabs = TRUE,caption = "Resultados da Regressão Linear")  |> 
@@ -458,8 +503,6 @@ jarque.bera.test(resid(fit3))
 # text(outliers_cook, cooks.distance(fit3)[outliers_cook], labels=outliers_cook, pos=4, col="black", cex=0.8)
 ```
 
-Resíduos 
-
 
 ```{r echo=FALSE,fig.width=6, fig.height=3.8}
 # residuo
@@ -485,13 +528,50 @@ residuo <- rstudent(fit3) # residuo studentizado
 ```
 
 
-```{r echo=FALSE, fig.width=6, fig.height=3.8, warning=FALSE, message=FALSE}
+```{r echo=FALSE, fig.width=6, fig.height=3.8, warning=FALSE, message=FALSE, fig="12"}
 
 hist(residuo) # histograma dos residuos
 
+```
+
+```{r echo=FALSE, fig.width=6, fig.height=3.8, warning=FALSE, message=FALSE, fig="13"}
 # envelope simulado baseado nos residuos studentizados
 hnp(fit3,resid.type="student",halfnormal = F) # envelope simulado 
 
 ```
 
 
+Por fim, temos o modelo ajustado como sendo:
+$$y=\beta_{1}+\beta_{5}x_{5}+\beta_{8}x_{8}+\beta_{9}x_{9}$$
+Sendo $\beta{1}$ o intercepto e as covariáveis sqft\_living e yr\_built e waterfront. Com o novo modelo ajustado temos  um $R^{2}$ de 0,633, ou seja, aproximadamente 63\% da variabilidade de y é explicado pelo modelo em questão. 
+
+substituindo os valores dos betas estimados da tabela \ref{tab:tab4} temos:
+$$y=5267421,33+257,52x_{5}-2687,41x_{8}+622120,7x_{9}$$
+
+Nota-se que a variável yr_built influencia negativamente no preço final do imóvel, o que faz sentido, visto que se a casa for antiga, há desvalorização da mesma no mercado imobiliário. Já a vista para o mar foi a variável que mais influenciou o preço final do imóvel, o que também faz muito sentido levando em consideração que imóveis próximos de praias, por exemplo, são mais valorizados.
+
+# Aplicação do modelo
+Na tabela \ref{tab:imov} abaixo temos cenários para aplicações de diferentes valores para variáveis. Como já esperado imóveis com vista para o mar são mais caros e imóveis mais novos também são mais caros quando comparados com imóveis mais antigos.
+
+\begin{table}[H]
+\centering
+\caption{Cenários de Preço dos Imóveis}
+\label{tab:imov}
+\begin{tabular}{cccccc}
+\toprule
+Cenário & sqft\_living & yr\_built & waterfront & Preço Estimado (R\$) \\
+\midrule
+1 & 2000 & 1990 & 0 & 437.575,43 \\
+2 & 3000 & 2000 & 1 & 636.281,03 \\
+3 & 1500 & 1980 & 0 & 336.569,53 \\
+4 & 2500 & 2010 & 1 & 637.551,03 \\
+5 & 1800 & 1995 & 0 & 364.822,38 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+# Referências
+
+[Linear Regression of Home Prices](https://www.kaggle.com/datasets/vikramamin/kc-house-dataset-home-prices)
+
+GUJARATI, Damodar N. Econometria Básica. 5ª ed. Porto Alegre: AMGH Editora, 2011.
