@@ -55,7 +55,7 @@ banco_final<-data.frame(banco_final[1:110,]) # selecionando apenas as 110 primei
 banco_final_id <- banco_final |> dplyr::mutate(id = dplyr::row_number()) # criando um coluna id correspondente ao número da linha em questao 
 
 # Índices dos outliers
-outliers <- c(20,61,63,64,66,67)
+outliers <- c(20,61,63,64,66,67,68)
 
 # banco final com os ajustes de remocao dos pontos influentes no modelo
 banco_final_novo<-banco_final_id |> dplyr::filter(!id %in% outliers) |> dplyr::select(-id)
@@ -83,17 +83,17 @@ Bathrooms & Número de banheiros no imóvel \\
 Bedrooms & Número de quartos no imóvel \\
 Floors & Número de andares no imóvel \\
 Sqft\_living & Metragem quadrada do imóvel \\
+Sqft\_above & Metragem do imóvel (sem o porão) \\
 Sqft\_lot & Metragem quadrada do terreno \\
-Sqft\_abova & Metragem do imóvel (sem o porão) \\
-Yr\_build & Ano de construção do imóvel \\
+Yr\_built & Ano de construção do imóvel \\
 Waterfront & Vista para o mar \\ \bottomrule
 \end{tabular}
 \end{table}
 
 
 Na tabela \ref{tab:tab2} é apresentado o resultado da análise descritiva das variáveis em estudo, como média, mediana, 1° e 3° quartil, além dos valores de máximo e mínimo. Logo, podemos indicar o primeiro modelo ajustado com todas as variáveis: 
-$$y=\beta_{1}+\beta_{2}x_{2}+\beta_{3}x_{3}+\beta_{4}x_{4}+\beta_{5}x_{5}+\beta_{6}x_{6}+\beta_{7}x_{7}+\beta_{8}x_{8}+\beta_{9}x_{9}+\beta_{10}x_{10}$$
-em que $\beta_{1}$ é o intercepto
+$$\hat{y}=\beta_{1}+\beta_{2}x_{2}+\beta_{3}x_{3}+\beta_{4}x_{4}+\beta_{5}x_{5}+\beta_{6}x_{6}+\beta_{7}x_{7}+\beta_{8}x_{8}$$
+em que $\beta_{1}$ é o intercepto do modelo de regressão linear, $y$ é a variável desfecho \textit{price}, e o vetor das covariáveis é $(x_{2},x_{3},x_{4},x_{5},x_{6},x_{7},x_{8})^{T}$=(bathrooms, bedrooms, bloors, sqft_living, sqft_above, sqft_lot, yr_built, waterfront).
 
 ```{r echo=FALSE, label="tab2"}
 descritiva<-summary(banco_final)
@@ -101,32 +101,39 @@ kable(descritiva, format = "latex", booktabs = TRUE,caption = "Análise descriti
   kable_styling(latex_options = c("striped", "HOLD_position", "scale_down"))
 ```
 
-
 ```{r include=FALSE}
 fit<-lm(price~., data=banco_final)
 # foram significativos para o modelo sqft_living, yr_build, waterfront 
 summary(fit)
 summary_fit<-summary(fit)
+#step(fit)
 # Extraindo a tabela de coeficientes
 coef_table <- summary_fit$coefficients
 
 # Convertendo a tabela de coeficientes em um data frame
 coef_df <- as.data.frame(coef_table)
-step(fit)
+#step(fit)
+# add significância
+coef_df$Significance <- cut(coef_df[, 4], 
+                            breaks = c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf), 
+                            labels = c("***", "**", "*", ".", ""))
 
 ```
 
+Para o primeiro modelo, apenas \textit{sqft\_living}, \textit{yr\_built}, \textit{waterfront} foram significativas para a variável resposta. Por conseguinte, temos que o coeficiente de determinação ($R^{2}$) foi de 0,547 e o $R^{2}$ ajustado ($\bar{R^{2}}$)foi de 0,511, então podemos concluir que esse modelo explica, aproximadamente, 54,7\% da variação de $y$.em sequência, foi utilizado o método \textit{Stepwise} que usa o critério de informação de Akaike (AIC), vale ressaltar que o "melhor" modelo deverá ter o menor AIC. 
 
 ```{r echo=FALSE, label="tab3"}
 # tabela com os coeficientes
 kable(coef_df, format = "latex", booktabs = TRUE,caption = "Resultados da Regressão Linear")  |> 
-  kable_styling(latex_options = c("striped", "HOLD_position"))
+  kable_styling(latex_options = c("striped", "HOLD_position")) |> 
+    add_footnote(c("Nota: *** p<0.001; ** p<0.01; * p<0.05; . p<0.1"))
 # se for necessario modificacoes na tabela salvar com tab  e deu usar o cat(tab) para gerar a tabela no console
 
 ```
 
-Após isso foi feito um \textit{step(fit)} do modelo 1, para vericar uma possível ajuste com as variáveis em questão utilizando o critério de seleção de AKAIKE o AIC. 
-
+Um novo modelo foi construído baseado no resultado do critério de informação de Akaike, o qual podemos observar abaixo:
+$$\hat{y}= \beta_{1}+\beta_{4}x_{4}+\beta_{7}x_{7}+\beta_{8}x_{8}$$
+Temos que a variável \textit{price} será explicada pelas variáveis $sqft\_living$, $yr\_built$, $waterfront$. A tabela \ref{tab:tab4}, apresenta os resultados referente ao modelo, temos que agora as três variáveis foram significativas para o modelo. Por conseguinte, o coeficiente de determinação ($R^{2}$) teve uma pequena diminuição para 0,532 e o $R^{2}$ ajustado ($\bar{R^{2}}$) aumentou para 0,519. Por último, ao verificar as suposições do modelo em questão, as suposições $[S_{0}]$, $[S_{3}]$ e $[S_{5}]$ não foram atendidas. Então, foi necessário realizar a análise de diagnóstico e influência. 
 
 ```{r include=FALSE}
 fit2<-lm(formula = price ~ sqft_living + yr_built + waterfront, data = banco_final)
@@ -137,18 +144,23 @@ coef_table2 <- summary_fit2$coefficients
 
 # Convertendo a tabela de coeficientes em um data frame
 coef_df2 <- as.data.frame(coef_table2)
+coef_df2$Significance <- cut(coef_df2[, 4], 
+                            breaks = c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf), 
+                            labels = c("***", "**", "*", ".", ""))
 
 ```
 
 
-```{r echo=FALSE, label=""}
+```{r echo=FALSE, label="tab4"}
 kable(coef_df2, format = "latex", booktabs = TRUE,caption = "Resultados da Regressão Linear")  |> 
-  kable_styling(latex_options = c("striped", "HOLD_position"))
+  kable_styling(latex_options = c("striped", "HOLD_position")) |>
+  add_footnote(c("Nota: *** p<0.001; ** p<0.01; * p<0.05; . p<0.1"))
 
 ```
 
 ## Análise de diagnóstico e influência
 
+Nesta seção temos a análise diagnóstico para o segundo modelo com apenas três covariáveis. O gráfico \ref{} se refere a alavancagem, no qual avaliamos possíveis ponto influentes para o modelo. Nota-se que as observações 6, 48, e 69 estão acima do limite estabelecido, porém ainda se faz necessário verificar se de fato essas observações são influentes. 
 
 ```{r include=FALSE}
 #tamanho do banco - banco sem remocao de observacoes
@@ -170,6 +182,7 @@ outliers <- which(h_values > limite)
 text(outliers, h_values[outliers], labels=outliers, pos=4, col="black", cex=0.8)
 ```
 
+Já o gráfico mostra o DFFIT e leva em consideração o quando cada observação influência no valor estimado para $\hat{y}$. Podemos notar que desta vez temos as observações 20, 64, 68 estão sendo influentes para $\hat{y}$, principalmente a observação 20. 
 
 ```{r echo=FALSE ,fig.width=6, fig.height=3.8}
 
@@ -185,10 +198,13 @@ text(outliers, dffits_values[outliers], labels=outliers, pos=4, col="black", cex
 
 ```
 
-```{r echo=FALSE, fig.width=25, fig.height=10}
+
+Na sequência temos os gráfico dos DFBETA para $\beta_{}$ do novo modelo ajustado. Podemos notar que a observação 20 aparece tanto $\beta's$ 2, 3 e 4. O que pode ser mais um indicativo que essa observação é influente. Para verificar tal questão, mais dois testes foram feitos, são eles distância de cook e gráfico dos resíduos. 
+
+```{r echo=FALSE}
 
 
-
+#fig.width=25, fig.height=10
 # DFBETA
 dfbetas_values<-dfbetas(fit2) # cada beta tem seu DF
 
@@ -198,24 +214,92 @@ dfb3<-dfbetas(fit2)[,3]
 dfb4<-dfbetas(fit2)[,4]
 
 limite<-2/sqrt(n)
-par(mfrow = c(2, 2))
-
-abline(plot(dfb1,ylab="DFBETA 1"), 
-       col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
-
-abline(plot(dfb2,ylab="DFBETA 2"), 
-       col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
-
-abline(plot(dfb3,ylab="DFBETA 3"), 
-       col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
-
-abline(plot(dfb4,ylab="DFBETA 4"), 
-       col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
+#par(mfrow = c(2, 2))
+# 
+# abline(plot(dfb1,ylab="DFBETA 1"), 
+#        col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
+# 
+# abline(plot(dfb2,ylab="DFBETA 2"), 
+#        col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
+# 
+# abline(plot(dfb3,ylab="DFBETA 3"), 
+#        col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
+# 
+# abline(plot(dfb4,ylab="DFBETA 4"), 
+#        col=c("red","blue","red"), h=c(-limite,0,limite),lty=c(2,1,2))
 
 
 ```
 
-Distância de Cook
+
+```{r echo=FALSE}
+get_top_bottom <- function(dfb, n = 5, limite) {
+  out_of_limits <- which(dfb > limite | dfb < -limite)
+  order_dfb <- order(abs(dfb[out_of_limits]), decreasing = TRUE)
+  top_n_indices <- out_of_limits[order_dfb[1:n]]
+  return(top_n_indices)
+}
+
+# Plot para DFBETA 1
+plot(dfb1, ylab = "DFBETA 1", main = "DFBETA 1")
+abline(h = c(-limite, 0, limite), col = c("red", "blue", "red"), lty = c(2, 1, 2))
+
+# Selecionando os índices dos 5 maiores e 5 menores valores fora do limite
+indices_dfb1 <- get_top_bottom(dfb1, limite = limite)
+
+# Marcando os pontos
+points(indices_dfb1, dfb1[indices_dfb1], col = "red", pch = 19)
+
+# Adicionando as observações correspondentes aos pontos
+text(indices_dfb1, dfb1[indices_dfb1], labels = indices_dfb1, pos = 3, col = "red")
+
+# Plot para DFBETA 2
+plot(dfb2, ylab = "DFBETA 2", main = "DFBETA 2")
+abline(h = c(-limite, 0, limite), col = c("red", "blue", "red"), lty = c(2, 1, 2))
+
+# Selecionando os índices dos 5 maiores e 5 menores valores fora do limite
+indices_dfb2 <- get_top_bottom(dfb2, limite = limite)
+
+# Marcando os pontos
+points(indices_dfb2, dfb2[indices_dfb2], col = "red", pch = 19)
+
+# Adicionando as observações correspondentes aos pontos
+text(indices_dfb2, dfb2[indices_dfb2], labels = indices_dfb2, pos = 3, col = "red")
+
+# Plot para DFBETA 3
+plot(dfb3, ylab = "DFBETA 3", main = "DFBETA 3")
+abline(h = c(-limite, 0, limite), col = c("red", "blue", "red"), lty = c(2, 1, 2))
+
+# Selecionando os índices dos 5 maiores e 5 menores valores fora do limite
+indices_dfb3 <- get_top_bottom(dfb3, limite = limite)
+
+# Marcando os pontos
+points(indices_dfb3, dfb3[indices_dfb3], col = "red", pch = 19)
+
+# Adicionando as observações correspondentes aos pontos
+text(indices_dfb3, dfb3[indices_dfb3], labels = indices_dfb3, pos = 3, col = "red")
+
+
+```
+
+
+```{r echo=FALSE }
+# Plot para DFBETA 4
+plot(dfb4, ylab = "DFBETA 4", main = "DFBETA 4")
+abline(h = c(-limite, 0, limite), col = c("red", "blue", "red"), lty = c(2, 1, 2))
+
+# Selecionando os índices dos 5 maiores e 5 menores valores fora do limite
+indices_dfb4 <- get_top_bottom(dfb4, limite = limite)
+
+# Marcando os pontos
+points(indices_dfb4, dfb4[indices_dfb4], col = "red", pch = 19)
+
+# Adicionando as observações correspondentes aos pontos
+text(indices_dfb4, dfb4[indices_dfb4], labels = indices_dfb4, pos = 3, col = "red")
+```
+
+
+No gráfico temos a distância de Cook, e novamente a observação 20 aparece como discrepante e fora do limite estabelecido.
 
 ```{r echo=FALSE,fig.width=6, fig.height=3.8}
 # distancia de Cook
@@ -236,8 +320,7 @@ outliers_cook <- which(cooks.distance(fit2) > limite)
 text(outliers_cook, cooks.distance(fit2)[outliers_cook], labels=outliers_cook, pos=4, col="black", cex=0.8)
 ```
 
-Resíduos 
-
+O mesmo ocorre no gráfico de resíduos, temos a observação 20 sendo apontada como distante dos limites estabelecidos.  
 
 ```{r echo=FALSE,fig.width=6, fig.height=3.8}
 # residuo
@@ -263,7 +346,7 @@ text(outliers_high, residuo[outliers_high], labels=outliers_high, pos=4, col="bl
 ```
 
 
-Histograma dos resíduos e envelope simulado
+No gráfico temos o histograma dos resíduos, nota-se que o mesmo está bem diferente do que se espera de uma distribuição normal. No gráfico \ref{} temos o envelope simulado.
 
 
 ```{r echo=FALSE, fig.width=6, fig.height=3.8, warning=FALSE, message=FALSE}
@@ -275,48 +358,104 @@ hnp(fit2,resid.type="student",halfnormal = F) # envelope simulado
 
 ```
 
-Foi feita a remoção da observação 20 e foi refeita a análise diagnóstico apenas da distância de cook, redíduos e envelope simulado. Por conseguinte, as novas observações foram identificadas como influentes para  para o modelo e causada a rejeição de ao menos duas das suposições obrigatórios para valiação do modelo de regressão linear. Então, foram removidas as seguinte observações $61,63,64,66,67$.
+No primeiro momento, foi feita a remoção da observação 20 e foi refeita a análise diagnóstico. Por conseguinte, novas observações foram identificadas como influentes para  para o modelo e causou a rejeição de ao menos duas das suposições obrigatórios para validação do modelo de regressão linear. Então, após mais alguns ajustes, no total foram removidas 7 observações, são elas: $20,61,63,64,66,67,68$.
 
+Com a remoção destas observações o modelo foi novamente avaliado, foi obtido um $R^{2}$
 
 ```{r include=FALSE}
-# ajuste do modelo com sem a observação 20
-fit3<-lm(formula = price ~ floors + sqft_living + yr_built + waterfront, 
-         data = banco_final_novo)
+# # ajuste do modelo com sem a observação 20
+fit3<-lm(formula = price ~ sqft_living + yr_built +  waterfront, data = banco_final_novo)
 summary(fit3)
-summary_fit<-summary(fit3)
-# Extraindo a tabela de coeficientes
-coef_table_fit3 <- summary_fit$coefficients
-
-# Convertendo a tabela de coeficientes em um data frame
-coef_df_fit3 <- as.data.frame(coef_table_fit3)
+# summary_fit<-summary(fit3)
+# # Extraindo a tabela de coeficientes
+# coef_table_fit3 <- summary_fit$coefficients
+# 
+# # Convertendo a tabela de coeficientes em um data frame
+# coef_df_fit3 <- as.data.frame(coef_table_fit3)
 
 ```
+
+```{r include=FALSE}
+
+## Testa [S0]
+## Teste RESET de especificacao
+## H0: O modelo estah corretamente especificado
+resettest(fit3)
+
+## Testa [S1]
+## Teste t para a média dos errros
+## H0: média dos erros eh igual a zero
+t.test(resid(fit3),mu=0,alternative="two.sided")
+
+## Testa [s2]
+## Teste de Bressch-Pagan (Koenker) de Heteroscedasticidade
+## H0: erros sao homoscedasticos
+bptest(fit3, studentize = TRUE)
+
+## Testa [S3]
+## Teste de Durbin-Watson de autocorrelacao
+## H0: : Nao hah autocorrelacao 
+dwtest(fit3)
+#acf(rstudent(fit3))
+
+## Testa [S4]
+## Usa Fatores de Inflacao de Variancia para detectar multicolinearidade
+## Regra de bolso: vif > 10 indica multicolinearidade. vif=1 seria o ideal.
+vif(fit3)
+
+## Testa [S5]
+## Teste Jarque-Bera de Normalidade
+## H0: Os erros possuem distribuicao normal
+jarque.bera.test(resid(fit3))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r echo=FALSE, label=""}
-kable(coef_df_fit3, format = "latex", booktabs = TRUE,caption = "Resultados da Regressão Linear")  |> 
-  kable_styling(latex_options = c("striped", "HOLD_position"))
+# kable(coef_df_fit3, format = "latex", booktabs = TRUE,caption = "Resultados da Regressão Linear")  |> 
+#   kable_styling(latex_options = c("striped", "HOLD_position"))
 
 ```
 
-Distância de Cook
 
 ```{r echo=FALSE,fig.width=6, fig.height=3.8}
-# distancia de Cook
-cook_values<-cooks.distance(fit3)
-limite<-4/(n-fit3$rank)
-abline(plot(cooks.distance(fit3),ylab="Distancia de Cook"), 
-       col="red", h=limite,lty=2)
-
-#identify(cooks.distance(fit2), n=2)
-
-# Identificar os pontos que são maiores que o limite
-outliers_cook <- which(cooks.distance(fit3) > limite)
-
-# Adiciona pontos em destaque para os valores acima do limite
-#points(outliers_cook, cooks.distance(fit2)[outliers_cook], col="white",pch=19)
-
-# Adiciona rótulos para os pontos acima do limite
-text(outliers_cook, cooks.distance(fit3)[outliers_cook], labels=outliers_cook, pos=4, col="black", cex=0.8)
+# # distancia de Cook
+# cook_values<-cooks.distance(fit3)
+# limite<-4/(n-fit3$rank)
+# abline(plot(cooks.distance(fit3),ylab="Distancia de Cook"), 
+#        col="red", h=limite,lty=2)
+# 
+# #identify(cooks.distance(fit2), n=2)
+# 
+# # Identificar os pontos que são maiores que o limite
+# outliers_cook <- which(cooks.distance(fit3) > limite)
+# 
+# # Adiciona pontos em destaque para os valores acima do limite
+# #points(outliers_cook, cooks.distance(fit2)[outliers_cook], col="white",pch=19)
+# 
+# # Adiciona rótulos para os pontos acima do limite
+# text(outliers_cook, cooks.distance(fit3)[outliers_cook], labels=outliers_cook, pos=4, col="black", cex=0.8)
 ```
 
 Resíduos 
@@ -325,21 +464,21 @@ Resíduos
 ```{r echo=FALSE,fig.width=6, fig.height=3.8}
 # residuo
 residuo <- rstudent(fit3) # residuo studentizado
-
-plot(residuo,type='p',pch="+",main="Residuos",xlab="indices") # plota os residuos do modelo
-abline(h=c(-2,0,2),lty=3) # inclui linhas horizontais no grafico
-
-outliers_high <- which(residuo > 3)
-outliers_low <- which(residuo < -3)
+# 
+# plot(residuo,type='p',pch="+",main="Residuos",xlab="indices") # plota os residuos do modelo
+# abline(h=c(-2,0,2),lty=3) # inclui linhas horizontais no grafico
+# 
+# outliers_high <- which(residuo > 3)
+# outliers_low <- which(residuo < -3)
 
 # Adiciona pontos em vermelho para os resíduos maiores que 3
 #points(outliers_high, residuo[outliers_high], col="black", pch=19)
 
 # Adiciona pontos em azul para os resíduos menores que -3
-points(outliers_low, residuo[outliers_low], col="blue", pch=19)
-
-# Adiciona rótulos para os outliers maiores que 3
-text(outliers_high, residuo[outliers_high], labels=outliers_high, pos=4, col="black", cex=0.8)
+# points(outliers_low, residuo[outliers_low], col="blue", pch=19)
+# 
+# # Adiciona rótulos para os outliers maiores que 3
+# text(outliers_high, residuo[outliers_high], labels=outliers_high, pos=4, col="black", cex=0.8)
 
 # Adiciona rótulos para os outliers menores que -3
 #text(outliers_low, residuo[outliers_low], labels=outliers_low, pos=4, col="blue", cex=0.8)
@@ -354,4 +493,5 @@ hist(residuo) # histograma dos residuos
 hnp(fit3,resid.type="student",halfnormal = F) # envelope simulado 
 
 ```
+
 

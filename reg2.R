@@ -29,22 +29,21 @@ banco_final <- banco_final |> dplyr::mutate(id = dplyr::row_number())
 
 
 # Índices dos outliers
-outliers <- c(20,61,63,64,66,67)
+outliers <- c(20,61,63,64,66,67,68)
 
 banco_final_novo<- banco_final |> dplyr::filter(!id %in% outliers) |> dplyr::select(-id)
-
 
 fit<-lm(price~., data=banco_final_novo)
 summary(fit)
 step(fit)
 
 
-# fit2<-lm(formula = price ~ sqft_living + sqft_lot + yr_built + waterfront, 
-#          data = banco_final_novo)
+# fit2<-lm(formula = price ~ floors + sqft_living + sqft_lot + yr_built + waterfront, 
+#           data = banco_final_novo)
 # summary(fit2)
+# step(fit2)
 
-
-fit3<-lm(formula = price ~ floors + sqft_living + yr_built + waterfront, 
+fit3<-lm(formula = price ~ sqft_living + yr_built + waterfront, 
          data = banco_final_novo)
 
 
@@ -87,7 +86,7 @@ points(outliers_cook, cooks.distance(fit3)[outliers_cook], col="blue", pch=19)
 text(outliers_cook, cooks.distance(fit3)[outliers_cook], labels=outliers_cook, pos=4, col="blue", cex=0.8)
 
 
-
+residuo <- rstudent(fit3)
  
 
 
