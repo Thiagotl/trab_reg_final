@@ -542,8 +542,8 @@ hnp(fit3,resid.type="student",halfnormal = F) # envelope simulado
 
 
 Por fim, temos o modelo ajustado como sendo:
-$$y=\beta_{1}+\beta_{5}x_{5}+\beta_{8}x_{8}+\beta_{9}x_{9}$$
-Sendo $\beta{1}$ o intercepto e as covariáveis sqft\_living e yr\_built e waterfront. Com o novo modelo ajustado temos  um $R^{2}$ de 0,633, ou seja, aproximadamente 63\% da variabilidade de y é explicado pelo modelo em questão. 
+$$\hat{y}=\beta_{1}+\beta_{5}x_{5}+\beta_{8}x_{8}+\beta_{9}x_{9}$$
+Sendo $\beta{1}$ o intercepto e as covariáveis sqft\_living e yr\_built e waterfront. Com o novo modelo ajustado temos  um $R^{2}$ de 0,633, ou seja, aproximadamente 63\% da variabilidade de y é explicado pelo modelo em questão.  e seu $R^2$ ajustado foi de 0,622
 
 substituindo os valores dos betas estimados da tabela \ref{tab:tab4} temos:
 $$y=5267421,33+257,52x_{5}-2687,41x_{8}+622120,7x_{9}$$
